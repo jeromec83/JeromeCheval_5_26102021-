@@ -13,24 +13,41 @@ function displayProducts(){
                         var a = document.createElement("a");
                         a.href = `./product.html?id=${product._id}`;
                         console.log(a);
+
                        
                         var img = document.createElement("img")
-                        img.src = `${products.imageURL}`;
-                        console.log(img)
+                        img.src = `${product.imageUrl}`;
+                        console.log(img);
+
 
                         var alt = document.createElement("alt")
-                        alt = `${products.altTxt}`;
+                        alt = `${product.altTxt}`;
                         console.log(alt);
 
 
+                        var nameh3 = document.createElement("h3")
+                        nameh3 = `${product.name}`;
+                        console.log(nameh3);
+                      
 
+                        var description = document.createElement("p")
+                        description = `${product.description}`;
+                        console.log(description);
+
+                        article.appendChild(img);
+                        article.appendChild(alt);
+                        article.appendChild(nameh3);
+                        article.appendChild(description);
+                        a.appendChild(article);
+                        items.appendChild(a);
                         
-
-                })
-        
+                })  
+                
         })
+       
+      
         
-        
+       
 }
-
 displayProducts();
+

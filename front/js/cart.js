@@ -1,151 +1,149 @@
-var cartProducts = JSON.parse(localStorage.getItem("cart"));
+//PAGE PANIER
+const cart = JSON.parse(localStorage.getItem("cart"));
+// afficher le contenu du panier 
+async function displayItem() {
+    if (cart === null || cart == 0) {
+        // ajout d'une div "panier vide"
+        document.querySelector("#cart__items").innerHTML = "<div class=\"cart_item\">Votre panier est vide !</div>";
+        // masquer le formulaire de commande
+        document.querySelector(".cart__order").style.display = "none";
+    } else {
+        for (let i = 0; i < cart.length; i++) {
+            const product = cart[i];
+            let idKanap = cart[i][0];
+            
+            // appeler l'api et récup les données de l'élément ciblé dans la boucle
+            await fetch("http://localhost:3000/api/products/" + product[0])
+                .then(function (res) {
+                    if (res.ok) {
+                        return res.json();
+                    }
+                })
+                .then(function (value) { // affichage du panier 
+                    let productPrice = value.price;
+                    let productName = value.name;
+                    let imageUrl = value.imageUrl;
+                    let altTxt = value.altTxt;
 
-//INTEGRATION DU PANIER//
-function displayCart() {
-  //SI PANIER VIDE//
-  if (cartProducts === null || cartProducts == 0) {
-    document.getElementById("cart__items").innerHTML = "<p>Il n'y a pas encore de Kanap ici, visitez <a href='./index.html' style=' color:white; font-weight:700'>notre séléction</a>.</p>";
-    // Cacher le formulaire de saisie infos utilisateur
-    document.querySelector(".cart__order").style.display = "none";
-  } else {
-    //SI PANIER REMPLIS//
-    cartProducts.forEach(cartProduct => {
-      getArticleFromApi(cartProduct);
-    });
-  }
+                    // créer les éléments dans lesquels les infos des produits vont ê affichés :
+                    let cartSection = document.querySelector('#cart__items');
+                    let article = document.createElement('article');
+                    article.className = "cart__item";
+                    article.setAttribute('data-id', idKanap);
+
+                    let divImage = document.createElement('div');
+                    divImage.className = ".cart__item__img";
+                    divImage.innerHTML = `<img src="${imageUrl}" alt="${altTxt}" width="150px" height="auto">`
+
+                    let divContent = document.createElement('div');
+                    divContent.className = "cart__item__content";
+
+                    let divTitlePrice = document.createElement('div');
+                    divTitlePrice.className = "cart__item__content__titlePrice";
+                    let title = document.createElement('h2');
+                    title.innerHTML = productName;
+                    let price = document.createElement('p');
+                    price.innerHTML = productPrice * product[1] + ' EUR';
+
+                    let divSettings = document.createElement('div');
+                    divSettings.className = "cart__item__content__settings";
+                    let divQuantity = document.createElement('div');
+                    divQuantity.className = "cart__item__content__settings__quantity";
+                    // divQuantity.innerHTML = `<p>Qté :<p> <br/>
+                    //     <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantity}">`;
+                    let quantityTitle = document.createElement('p');
+                    quantityTitle.innerHTML = "Qté : ";
+                    let quantityInput = document.createElement('input');
+                    quantityInput.type = "number";
+                    quantityInput.name = "itemQuantity";
+                    quantityInput.className = "itemQuantity";
+                    quantityInput.min = "1";
+                    quantityInput.max = "100";
+                    quantityInput.value = product[1];
+
+                    let divColor = document.createElement('div');
+                    divColor.innerHTML = `<p>Couleur : ${product[2]}<p>`;
+
+                    let divDelete = document.createElement('div');
+                    divDelete.className = "cart__item__content__settings__delete";
+                    let deleteItem = document.createElement('p');
+                    deleteItem.className = "deleteItem";
+                    deleteItem.innerText = "Supprimer";
+
+                    // affichage des éléments (ordre décroissant du plus précis au plus global)
+                    divTitlePrice.appendChild(title);
+                    divTitlePrice.appendChild(price);
+                    divContent.appendChild(divTitlePrice);
+
+                    divQuantity.appendChild(quantityTitle);
+                    divQuantity.appendChild(quantityInput);
+                    divSettings.appendChild(divColor);
+                    divSettings.appendChild(divQuantity);
+                    divDelete.appendChild(deleteItem);
+                    divSettings.appendChild(divDelete);
+                    divContent.appendChild(divSettings);
+
+                    article.appendChild(divImage);
+                    article.appendChild(divContent);
+                    cartSection.appendChild(article);
+                })
+                .catch(function (error) {
+                    console.log('Il y a eu un problème avec l\'opération fetch: ' + error.message);
+                });
+        }
+    };
 }
-// Fonction qui récupere puis afficher les valeurs dans l'API
-function getArticleFromApi(cartProduct) {
-  fetch(`http://localhost:3000/api/products/${cartProduct[0]}`)
-        .then(res => {
-          if (res.ok) {
-            return res.json();
-          }
-        })
-        .then(product => {
-          displayProduct(product, cartProduct[1]);
-        })
-        .catch(error => {
-          // Une erreur est survenue
-        });
-}
-
-
-function displayProduct(product, qty) {
-  // Création article
-  let article = document.createElement("article");
-  article.classList.add("cart__item");
-
-  cart__items.appendChild(article);
-
-  // Création div img
-
-  let divImg = document.createElement("div");
-  divImg.classList.add("cart__item__img");
-
-  article.appendChild(divImg);
-
-  // Création div cart item content
-
-  let cartItemContent = document.createElement("div");
-  cartItemContent.classList.add("cart__item__content");
-
-  article.appendChild(cartItemContent);
-
-  // Création cart__item__content__titlePrice
-
-  let cartItemContentTitlePrice = document.createElement("div");
-  cartItemContentTitlePrice.classList.add("cart__item__content__titlePrice");
-
-  cartItemContent.appendChild(cartItemContentTitlePrice);
-
-  // Création div cart__item__content__settings
-
-  let cartItemContentSettings = document.createElement("div");
-  cartItemContentSettings.classList.add("cart__item__content__settings");
-
-  cartItemContent.appendChild(cartItemContentSettings);
-
-  // Création div class="cart__item__content__settings__quantity
-
-  let cartItemContentSettingsQuantity = document.createElement("div");
-  cartItemContentSettingsQuantity.classList.add("cart__item__content__settings__quantity");
-
-  cartItemContentSettings.appendChild(cartItemContentSettingsQuantity);
-
-  // Quantité
-
-  let quantity = document.createElement("p");
-  cartItemContentSettingsQuantity.appendChild(quantity).textContent = "Qté : " + qty;
-
-  // div supprimer
-
-  let cartItemContentSettingsDelete = document.createElement("div");
-  cartItemContentSettingsDelete.classList.add("cart__item__content__settings__delete");
-
-  cartItemContentSettings.appendChild(cartItemContentSettingsDelete);
-
-  // deleteItem
-
-  let deleteItem = document.createElement("p");
-  deleteItem.classList.add("deleteItem");
-
-  cartItemContentSettingsDelete.appendChild(deleteItem).textContent = "Supprimer";
-
-  //IMG
-  let articleImg = document.createElement("img");
-  articleImg.classList.add("article-Img");
-  articleImg = new Image(300, 150);
-  articleImg.src = divImg.appendChild(articleImg).imgContent = product.imageUrl;
-
-  //Nom du produit
-  let productName = document.createElement("h2");
-  cartItemContentTitlePrice.appendChild(productName).textContent = product.name;
-
-  //Prix produit
-  let productPrice = document.createElement("p");
-  cartItemContentTitlePrice.appendChild(productPrice).textContent = product.price + " €";
-}
+displayItem();
 
 // total des quantités
-let totalQuantity = 0;
-if (cartProducts != null) {
-  for (let j = 0; j < cartProducts.length; j++) {
-    totalQuantity += parseInt(cartProducts[j][1]);
+let totalQuantity = 0 
+if (cart != null) {
+    for (let j = 0; j < cart.length; j++) {
+        totalQuantity += parseInt(cart[j][1]);
 
-    document.getElementById("totalQuantity").textContent = totalQuantity;
-  }
-
-  // Prix total
-
-  for (let k = 0; k < cartProducts.length; k++) {
-    // index 0, Condition, incrémentation de l'index
-
-    fetch(`http://localhost:3000/api/products/${cartProducts[k][0]}`)
-      .then(function (res) {
-        if (res.ok) {
-          return res.json();
-        }
-      })
-      .then(function (value) {
-        totalPrices(value);
-      })
-      .catch(function (error) {
-        // Une erreur est survenue
-      });
-    function totalPrices(value) {
-      let totalPrice = 0;
-      for (let j = 0; j < cartProducts.length; j++) {
-        totalPrice += parseInt(cartProducts[j][1]) * parseInt(value.price);
-
-        document.getElementById("totalPrice").textContent = totalPrice;
-      }
+        document.getElementById("totalQuantity").textContent = totalQuantity;
     }
-  }
+
+    // Prix total
+
+    for (let k = 0; k < cart.length; k++) { // index 0, Condition, incrémentation de l'index
+
+        fetch(`http://localhost:3000/api/products/${cart[k][0]}`)
+        .then(function(res) {
+            if (res.ok) {
+                return res.json();
+            }
+        })
+        .then(function(value) {
+            totalPrices(value);  
+        })
+        .catch(function(error) {
+            // Une erreur est survenue
+        });
+        function totalPrices(value) {
+            let totalPrice = 0 
+            for (let j = 0; j < cart.length; j++) {
+                totalPrice += parseInt(cart[j][1]) * parseInt(value.price);
+
+                document.getElementById("totalPrice").textContent = totalPrice;
+            }
+        }
+    }
 }
-displayCart();
 
+ // bouton supprimer 
 
+const btnSupprimer = document.getElementsByClassName("deleteItem");
+var articlesLocalStorage = JSON.parse(localStorage.getItem("produits")); // <<< on recupère le localStorage
+    
+for (let j = 0; j < btnSupprimer.length; j++) {
+    btnSupprimer[j].addEventListener("click" , (event) => {
+
+        var elementSupprimer = articlesLocalStorage.splice(j, 1);
+        localStorage.setItem("produits", JSON.stringify(articlesLocalStorage));
+        window.location.reload(true);
+    })
+}
 
 
 
@@ -260,7 +258,7 @@ btnFormulaire.addEventListener("click", (event) => {
 
   const envoyer = {
     contact,
-    products: cartProducts.map((e) => e.idProduit),
+    products: cart.map((e) => e.idProduit),
   };
 
   // Envoie des données vers le serveur
@@ -280,4 +278,4 @@ btnFormulaire.addEventListener("click", (event) => {
     .catch(function (error) {
       console.log(error);
     });
-});
+})

@@ -1,16 +1,16 @@
 //PAGE PANIER
-const cart = JSON.parse(localStorage.getItem("cart"));
+const cartProducts = JSON.parse(localStorage.getItem("cart"));
 // afficher le contenu du panier 
 async function displayItem() {
-    if (cart === null || cart == 0) {
+    if (cartProducts === null || cartProducts == 0) {
         // ajout d'une div "panier vide"
         document.querySelector("#cart__items").innerHTML = "<div class=\"cart_item\">Votre panier est vide !</div>";
         // masquer le formulaire de commande
         document.querySelector(".cart__order").style.display = "none";
     } else {
-        for (let i = 0; i < cart.length; i++) {
-            const product = cart[i];
-            let idKanap = cart[i][0];
+        for (let i = 0; i < cartProducts.length; i++) {
+            const product = cartProducts[i];
+            let idKanap = cartProducts[i][0];
             
             // appeler l'api et récup les données de l'élément ciblé dans la boucle
             await fetch("http://localhost:3000/api/products/" + product[0])
@@ -42,8 +42,7 @@ async function displayItem() {
                     divTitlePrice.className = "cart__item__content__titlePrice";
                     let title = document.createElement('h2');
                     title.innerHTML = productName;
-                    let price = document.createElement('p');
-                    price.innerHTML = productPrice * product[1] + ' EUR';
+                    
 
                     let divSettings = document.createElement('div');
                     divSettings.className = "cart__item__content__settings";
@@ -61,6 +60,9 @@ async function displayItem() {
                     quantityInput.max = "100";
                     quantityInput.value = product[1];
 
+                    let price = document.createElement('p');
+                    price.innerHTML = productPrice * quantityInput.value + ' EUR';
+console.log(quantityInput.value);
                     let divColor = document.createElement('div');
                     divColor.innerHTML = `<p>Couleur : ${product[2]}<p>`;
 
@@ -95,20 +97,23 @@ async function displayItem() {
 }
 displayItem();
 
+ 
+
+
 // total des quantités
 let totalQuantity = 0 
-if (cart != null) {
-    for (let j = 0; j < cart.length; j++) {
-        totalQuantity += parseInt(cart[j][1]);
+if (cartProducts != null) {
+    for (let j = 0; j < cartProducts.length; j++) {
+        totalQuantity += parseInt(cartProducts[j][1]);
 
         document.getElementById("totalQuantity").textContent = totalQuantity;
     }
 
     // Prix total
 
-    for (let k = 0; k < cart.length; k++) { // index 0, Condition, incrémentation de l'index
+    for (let k = 0; k < cartProducts.length; k++) { // index 0, Condition, incrémentation de l'index
 
-        fetch(`http://localhost:3000/api/products/${cart[k][0]}`)
+        fetch(`http://localhost:3000/api/products/${cartProducts[k][0]}`)
         .then(function(res) {
             if (res.ok) {
                 return res.json();
@@ -122,8 +127,8 @@ if (cart != null) {
         });
         function totalPrices(value) {
             let totalPrice = 0 
-            for (let j = 0; j < cart.length; j++) {
-                totalPrice += parseInt(cart[j][1]) * parseInt(value.price);
+            for (let j = 0; j < cartProducts.length; j++) {
+                totalPrice += parseInt(cartProducts[j][1]) * parseInt(value.price);
 
                 document.getElementById("totalPrice").textContent = totalPrice;
             }
@@ -258,7 +263,7 @@ btnFormulaire.addEventListener("click", (event) => {
 
   const envoyer = {
     contact,
-    products: cart.map((e) => e.idProduit),
+    products: cartProducts.map((e) => e.idProduit),
   };
 
   // Envoie des données vers le serveur

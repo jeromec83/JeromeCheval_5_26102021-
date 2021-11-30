@@ -12,6 +12,7 @@ async function displayItem() {
             const product = cartProducts[i];
             let idKanap = cartProducts[i][0];
             
+
             // appeler l'api et récup les données de l'élément ciblé dans la boucle
             await fetch("http://localhost:3000/api/products/" + product[0])
                 .then(function (res) {
@@ -25,7 +26,7 @@ async function displayItem() {
                     let imageUrl = value.imageUrl;
                     let altTxt = value.altTxt;
 
-                    // créer les éléments dans lesquels les infos des produits vont ê affichés :
+                    // créer les éléments dans lesquels les infos des produits vont être affichés :
                     let cartSection = document.querySelector('#cart__items');
                     let article = document.createElement('article');
                     article.className = "cart__item";
@@ -48,8 +49,7 @@ async function displayItem() {
                     divSettings.className = "cart__item__content__settings";
                     let divQuantity = document.createElement('div');
                     divQuantity.className = "cart__item__content__settings__quantity";
-                    // divQuantity.innerHTML = `<p>Qté :<p> <br/>
-                    //     <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantity}">`;
+                   
                     let quantityTitle = document.createElement('p');
                     quantityTitle.innerHTML = "Qté : ";
                     let quantityInput = document.createElement('input');
@@ -62,7 +62,9 @@ async function displayItem() {
 
                     let price = document.createElement('p');
                     price.innerHTML = productPrice * quantityInput.value + ' EUR';
-console.log(quantityInput.value);
+                    //console.log(quantityInput.value);
+                     
+
                     let divColor = document.createElement('div');
                     divColor.innerHTML = `<p>Couleur : ${product[2]}<p>`;
 
@@ -88,16 +90,26 @@ console.log(quantityInput.value);
                     article.appendChild(divImage);
                     article.appendChild(divContent);
                     cartSection.appendChild(article);
+
+                    // Modification d'une quantité de produit
+                    quantityInput.addEventListener("change" , (event) => {
+                        price.innerHTML = productPrice * event.target.value + ' EUR';
+                        console.log(price);
+                    });
+                   
+
                 })
                 .catch(function (error) {
                     console.log('Il y a eu un problème avec l\'opération fetch: ' + error.message);
                 });
         }
+       
     };
 }
 displayItem();
 
- 
+
+
 
 
 // total des quantités
@@ -136,19 +148,20 @@ if (cartProducts != null) {
     }
 }
 
- // bouton supprimer 
+  
 
-const btnSupprimer = document.getElementsByClassName("deleteItem");
-var articlesLocalStorage = JSON.parse(localStorage.getItem("produits")); // <<< on recupère le localStorage
-    
-for (let j = 0; j < btnSupprimer.length; j++) {
-    btnSupprimer[j].addEventListener("click" , (event) => {
 
-        var elementSupprimer = articlesLocalStorage.splice(j, 1);
-        localStorage.setItem("produits", JSON.stringify(articlesLocalStorage));
-        window.location.reload(true);
-    })
-}
+
+
+
+
+
+
+
+
+
+
+ 
 
 
 
@@ -217,8 +230,6 @@ btnFormulaire.addEventListener("click", (event) => {
     email: document.getElementById("email").value,
   };
 
-  //var contacts = new Object;
-  //contacts = {firstName, lastName, address, city, email}
   //  ----------------- Validation du formulaire--------------------
   // Le prénom
   const lePrenom = contact.firstName;

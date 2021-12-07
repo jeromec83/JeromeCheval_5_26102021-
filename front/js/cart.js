@@ -1,5 +1,6 @@
 //PAGE PANIER
 const cartProducts = JSON.parse(localStorage.getItem("cart"));
+
 // afficher le contenu du panier 
 async function displayItem() {
     if (cartProducts === null || cartProducts == 0) {
@@ -28,6 +29,7 @@ async function displayItem() {
 
                     // créer les éléments dans lesquels les infos des produits vont être affichés :
                     let cartSection = document.querySelector('#cart__items');
+                    
                     let article = document.createElement('article');
                     article.className = "cart__item";
                     article.setAttribute('data-id', idKanap);
@@ -91,207 +93,250 @@ async function displayItem() {
                     article.appendChild(divContent);
                     cartSection.appendChild(article);
 
-                    // Modification d'une quantité de produit
+
+                    
+
+                    // Modification du prix du produit de produit
                     quantityInput.addEventListener("change" , (event) => {
                         price.innerHTML = productPrice * event.target.value + ' EUR';
-                        console.log(price);
-                    });
+                       
+                        });
                    
-
                 })
+                
                 .catch(function (error) {
                     console.log('Il y a eu un problème avec l\'opération fetch: ' + error.message);
                 });
         }
-       
+        deleteProduct();
+        changePdtQty();
+        totalPce();
     };
 }
 displayItem();
 
-
-
-
-
-// total des quantités
-let totalQuantity = 0 
-if (cartProducts != null) {
-    for (let j = 0; j < cartProducts.length; j++) {
-        totalQuantity += parseInt(cartProducts[j][1]);
-
-        document.getElementById("totalQuantity").textContent = totalQuantity;
-    }
-
-    // Prix total
-
-    for (let k = 0; k < cartProducts.length; k++) { // index 0, Condition, incrémentation de l'index
-
-        fetch(`http://localhost:3000/api/products/${cartProducts[k][0]}`)
-        .then(function(res) {
-            if (res.ok) {
-                return res.json();
-            }
-        })
-        .then(function(value) {
-            totalPrices(value);  
-        })
-        .catch(function(error) {
-            // Une erreur est survenue
-        });
-        function totalPrices(value) {
-            let totalPrice = 0 
-            for (let j = 0; j < cartProducts.length; j++) {
-                totalPrice += parseInt(cartProducts[j][1]) * parseInt(value.price);
-
-                document.getElementById("totalPrice").textContent = totalPrice;
-            }
-        }
-    }
+/* Modifier la quantité de l'article 
+ * = 1 récup les input itemQuantity des articles et leur id dans le panier / 2 récup qté dans l'input itemQuantity
+ * si itemQuantity change (addEventlistener) / alors set nouvelle quantité de itemQuantity ds DOM et dans cart
+ */
+function changePdtQty() { 
+  let itemQuantity = document.querySelectorAll('.itemQuantity');
+  for (let k = 0; k < itemQuantity.length; k++) {
+      itemQuantity[k].addEventListener('change', () => {        
+          let newQty = itemQuantity[k].value;
+          if (newQty >= 1 && newQty <= 100){
+              cartProducts[k][1] = itemQuantity[k].value;
+              localStorage.setItem('cart', JSON.stringify(cartProducts));
+              // recalcul qté et prix totaux
+              totalPce();
+          } else {
+              alert('Veuillez saisir une valeur entre 1 et 100 s\'il vous plait.') 
+              itemQuantity[k].value = product[k][1];               
+          }
+      })
+  }
 }
 
-  
+function totalPce() {
+  let totalPce = parseInt(0);
+  let totalQty = Number(0);
 
 
+  let elements = document.querySelectorAll('.cart__item');
+  elements.forEach(element => {
+      let dataAttribute = element.getAttribute('data-id');
+      let productQty = element.querySelector(".itemQuantity").value;
+      //total de produit dans le panier :
+      totalQty += Number(productQty);
+      document.querySelector('#totalQuantity').innerText = totalQty;
+      // prix total du panier
+      fetch("http://localhost:3000/api/products/" + dataAttribute)
+          .then(function (res) {
+              if (res.ok) {
+                  return res.json();
+              }
+          })
+          .then(function (value) {
+              let productPrice = Number(value.price);
+              // console.log("qté du produit " + productQty + " prix produit " + productPrice)
+              // calcul total
+              totalPce += (productQty * productPrice);
+              // affichage prix total dans le panier
+              document.querySelector('#totalPrice').innerText = totalPce;
+          })
+          .catch(function (error) {
+              console.log('Il y a eu un problème avec l\'opération fetch pour le calcul total : ' + error.message);
+          });
+  });
+}
+/* Supprimer l'article :*/
+
+function deleteProduct() {
+  let deleteItem = document.querySelectorAll('.deleteItem');
+  for (let j = 0; j < deleteItem.length; j++) {
+      deleteItem[j].addEventListener('click', (event) => { 
+          event.preventDefault();
+          let itemToDelete = cartProducts.indexOf(cartProducts[j]);
+          console.log("index du produit à suppr : " + itemToDelete + " couleur : " + cartProducts[j][3])
+          cartProducts.splice(itemToDelete, 1);
+          // renvoyer ce nouveau panier dans le localStorage
+          localStorage.setItem('cart', JSON.stringify(cartProducts));
+        
+          // recharger la page pour suppr affichage du produit dans le panier
+          location.reload();
+      })
+      //recalculer le prix total sans cet article
+      totalPce();
+  }
+}
 
 
+//-------------------Formulaire regExp------------------------
+// on selection le formulaire dans le HTML
+let form = document.querySelector('.cart__order__form');
 
-
-
-
-
-
-
-
+//-------- Validation Prenom------------------
+form.firstName.addEventListener('change', function(){
+  validfirstName(this);
+});
+const validfirstName = function(inputfirstName){
  
+  //regExp = lettre minuscule et majuscule de a à z, entre 3 et 20 caractères
+  let firstNameRegExp = new RegExp ("^[A-Za-z ,']{3,20}$", 'g');
+  let errorMsg = document.querySelector('#firstNameErrorMsg');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ------------------ Récupération des données du formulaire---------------
-
-const btnFormulaire = document.getElementById("order");
-btnFormulaire.addEventListener("click", (event) => {
-  event.preventDefault();
-
-  const contact = {
-    firstName: document.getElementById("firstName").value,
-    lastName: document.getElementById("lastName").value,
-    address: document.getElementById("address").value,
-    city: document.getElementById("city").value,
-    email: document.getElementById("email").value,
-  };
-
-  //  ----------------- Validation du formulaire--------------------
-  // Le prénom
-  const lePrenom = contact.firstName;
-  if (/^([A-Za-zéôè]{3,20})?([-]{0,1})?([A-Za-zéôè]{3,20})$/.test(lePrenom)) {
-  } else {
-    alert(
-      "Pour le prénom des lettres en minuscules ou majuscules compris entre 3 et 20 caractères"
-    );
+  // Si les conditions sont remplie, renvoyer "true"
+  if(firstNameRegExp.test(inputfirstName.value)){
+    errorMsg.innerHTML= ""
+    return true;
+  }
+  //Sinon affichage du message d'erreur 
+  else{
+    errorMsg.innerHTML= "Prénom non valide"
   }
 
-  // Le nom
-  const leNom = contact.lastName;
-  if (/^([A-Za-zéôè]{3,20})?([-]{0,1})?([A-Za-zéôè]{3,20})$/.test(leNom)) {
-  } else {
-    alert(
-      "Pour le nom des lettres en minuscules ou majuscules compris entre 3 et 20 caractères"
-    );
+};
+
+//-------- Validation Nom------------------
+form.lastName.addEventListener('change', function(){
+  validlastName(this);
+});
+const validlastName = function(inputlastName){
+ 
+  let lastNameRegExp = new RegExp ("^[A-Za-zéàèôö,']{3,20}$", 'g');
+  let errorMsg = document.querySelector('#lastNameErrorMsg');
+
+  if(lastNameRegExp.test(inputlastName.value)){
+    errorMsg.innerHTML= ""
+    return true;
+  }
+  else{
+    errorMsg.innerHTML= "Nom non valide"
   }
 
-  // L'adresse
-  const ladresse = contact.address;
-  if (
-    /^([A-Za-z0-9\s]{3,50})?([-]{0,1})?([A-Za-z0-9\s]{3,50})$/.test(ladresse)
-  ) {
-  } else {
-    alert(
-      "Pour l'adresse des lettres et chiffre compris entre 3 et 50 caractères"
-    );
+};
+
+//-------- Validation Adresse------------------
+form.address.addEventListener('change', function(){
+  validAddress(this);
+});
+const validAddress = function(inputAddress){
+ 
+  let addressRegExp = new RegExp ("[A-Za-z0-9'\.\-\s\,]", 'g');
+  let errorMsg = document.querySelector('#addressErrorMsg');
+
+  if(addressRegExp.test(inputAddress.value)){
+    errorMsg.innerHTML= ""
+    return true;
+  }
+  else{
+    errorMsg.innerHTML= "Address non valide"
   }
 
-  // La ville
-  const laVille = contact.city;
-  if (/^[A-Za-z\s-]{3,30}$/.test(laVille)) {
-  } else {
-    alert(
-      "Pour la ville des lettres en minuscules ou majuscules compris entre 3 et 30 caractères"
-    );
+};
+
+//-------- Validation Ville------------------
+form.city.addEventListener('change', function(){
+  validCity(this);
+});
+const validCity = function(inputCity){
+ 
+  let cityRegExp = new RegExp ("^[A-Za-z ,.'-]{3,20}$", 'g');
+  let errorMsg = document.querySelector('#cityErrorMsg');
+
+  if(cityRegExp.test(inputCity.value)){
+    errorMsg.innerHTML= ""
+    return true;
   }
-  // Mettre l'objet formulaireValues dans le local storage
+  else{
+    errorMsg.innerHTML= "Ville non valide"
+  }
 
-  localStorage.setItem("formulaire", JSON.stringify(contact));
+};
 
-  const envoyer = {
-    contact,
-    products: cartProducts.map((e) => e.idProduit),
-  };
 
-  // Envoie des données vers le serveur
+//-------- Validation e-mail------------------
+form.email.addEventListener('change', function(){
+  validEmail(this);
+});
+const validEmail = function(inputEmail){
+  //creation de la regExp pour la validation de l'email
+  let emailRegExp = new RegExp ('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$', 'g');
+  let errorMsg = document.querySelector('#emailErrorMsg');
 
-  fetch("http://localhost:3000/api/products/order", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+  if(emailRegExp.test(inputEmail.value)){
+    errorMsg.innerHTML= ""
+    return true;
+  }
+  else{
+    errorMsg.innerHTML= "Email non valide"
+  }
+
+};
+
+
+
+
+//---------------------Soumission du formulaire---------------------
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  // si tout les éléments sont true, le bouton commande renvoit vers la page confirmation 
+  if(validfirstName(form.firstName) && 
+     validlastName(form.lastName) && 
+     validAddress(form.address) && 
+     validCity(form.city) && 
+     validEmail(form.email)){
+    recupInfoForm(this);
+  }
+});
+
+function recupInfoForm(form) {
+  
+  //Stockage des informations du formulaire
+  const body = {
+    'contact': {
+      'firstName': form.firstName.value,
+      'lastName' : form.lastName.value,
+      'address'  : form.address.value,
+      'city'     : form.city.value,
+      'email'    : form.email.value,
     },
-    body: JSON.stringify(envoyer),
-  })
-    .then(function (res) {
-      const contenu = res.json();
-     
+    //Stockage des produits du panier
+    'products': Object.keys(cartProducts)
+  }
+
+
+  //Récuperer l'orderID dans le back-end
+  fetch('http://localhost:3000/api/products/order', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  }).then( res => res.json() ).then(
+    js => {
+      location.href =  `./confirmation.html?orderid=${js['orderId']}`
     })
-    .catch(function (error) {
-      console.log(error);
-    });
-})
+  
+}

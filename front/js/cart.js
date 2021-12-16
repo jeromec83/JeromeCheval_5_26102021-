@@ -1,338 +1,321 @@
 //PAGE PANIER
-const cartProducts = JSON.parse(localStorage.getItem("cart"));
-console.log(cartProducts);
-
-// afficher le contenu du panier
+const cart = JSON.parse(localStorage.getItem("cart"));
+// afficher le contenu du panier 
+console.log(cart);
 async function displayItem() {
-  if (cartProducts === null || cartProducts == 0) {
-    // ajout d'une div "panier vide"
-    document.querySelector("#cart__items").innerHTML =
-      '<div class="cart_item">Votre panier est vide !</div>';
-    // masquer le formulaire de commande
-    document.querySelector(".cart__order").style.display = "none";
-  } else {
-    for (let i = 0; i < cartProducts.length; i++) {
-      const product = cartProducts[i];
-      let idKanap = cartProducts[i][0];
+    if (cart === null || cart == 0) {
+        // ajout d'une div "panier vide"
+        document.querySelector("#cart__items").innerHTML = "<div class=\"cart_item\">Votre panier est vide !</div>";
+        // masquer le formulaire de commande
+        document.querySelector(".cart__order").style.display = "none";
+    } else {
+        for (let i = 0; i < cart.length; i++) {
+            const product = cart[i];
+            let idKanap = product.ref;
+            let selectedColor = product.color;
+            let quantity = product.quantity;
+            // appeler l'api et récup les données de l'élément ciblé dans la boucle
+            await fetch("http://localhost:3000/api/products/" + idKanap)
+                .then(function (res) {
+                    if (res.ok) {
+                        return res.json();
+                    }
+                })
+                .then(function (value) { // affichage du panier 
+                    let productPrice = value.price;
+                    let productName = value.name;
+                    let imageUrl = value.imageUrl;
+                    let altTxt = value.altTxt;
 
-      // appeler l'api et récup les données de l'élément ciblé dans la boucle
-      await fetch("http://localhost:3000/api/products/" + product[0])
-        .then(function (res) {
-          if (res.ok) {
-            return res.json();
-          }
-        })
-        .then(function (value) {
-          // affichage du panier
-          let productPrice = value.price;
-          let productName = value.name;
-          let imageUrl = value.imageUrl;
-          let altTxt = value.altTxt;
+                    // créer les éléments dans lesquels les infos des produits vont ê affichés :
+                    let cartSection = document.querySelector('#cart__items');
+                    let article = document.createElement('article');
+                    article.className = "cart__item";
+                    article.setAttribute('data-id', idKanap);
 
-          // créer les éléments dans lesquels les infos des produits vont être affichés :
-          let cartSection = document.querySelector("#cart__items");
+                    let divImage = document.createElement('div');
+                    divImage.className = ".cart__item__img";
+                    divImage.innerHTML = `<img src="${imageUrl}" alt="${altTxt}" width="150px" height="auto">`
 
-          let article = document.createElement("article");
-          article.className = "cart__item";
-          article.setAttribute("data-id", idKanap);
+                    let divContent = document.createElement('div');
+                    divContent.className = "cart__item__content";
 
-          let divImage = document.createElement("div");
-          divImage.className = ".cart__item__img";
-          divImage.innerHTML = `<img src="${imageUrl}" alt="${altTxt}" width="150px" height="auto">`;
+                    let divTitlePrice = document.createElement('div');
+                    divTitlePrice.className = "cart__item__content__titlePrice";
+                    let title = document.createElement('h2');
+                    title.innerHTML = productName;
+                   
 
-          let divContent = document.createElement("div");
-          divContent.className = "cart__item__content";
+                    let divSettings = document.createElement('div');
+                    divSettings.className = "cart__item__content__settings";
+                    let divQuantity = document.createElement('div');
+                    divQuantity.className = "cart__item__content__settings__quantity";
+                    // divQuantity.innerHTML = `<p>Qté :<p> <br/>
+                    //     <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantity}">`;
+                    let quantityTitle = document.createElement('p');
+                    quantityTitle.innerHTML = "Qté : ";
+                    let quantityInput = document.createElement('input');
+                    quantityInput.type = "number";
+                    quantityInput.name = "itemQuantity";
+                    quantityInput.className = "itemQuantity";
+                    quantityInput.min = "1";
+                    quantityInput.max = "100";
+                    quantityInput.value = quantity;
 
-          let divTitlePrice = document.createElement("div");
-          divTitlePrice.className = "cart__item__content__titlePrice";
-          let title = document.createElement("h2");
-          title.innerHTML = productName;
+                    let price = document.createElement("p");
+                    price.innerHTML = productPrice * quantityInput.value + " EUR";
 
-          let divSettings = document.createElement("div");
-          divSettings.className = "cart__item__content__settings";
-          let divQuantity = document.createElement("div");
-          divQuantity.className = "cart__item__content__settings__quantity";
+                    let divColor = document.createElement('div');
+                    divColor.innerHTML = `<p>Couleur : ${selectedColor}<p>`;
 
-          let quantityTitle = document.createElement("p");
-          quantityTitle.innerHTML = "Qté : ";
-          let quantityInput = document.createElement("input");
-          quantityInput.type = "number";
-          quantityInput.name = "itemQuantity";
-          quantityInput.className = "itemQuantity";
-          quantityInput.min = "1";
-          quantityInput.max = "100";
-          quantityInput.value = product[1];
+                    let divDelete = document.createElement('div');
+                    divDelete.className = "cart__item__content__settings__delete";
+                    let deleteItem = document.createElement('p');
+                    deleteItem.className = "deleteItem";
+                    deleteItem.innerText = "Supprimer";
 
-          let price = document.createElement("p");
-          price.innerHTML = productPrice * quantityInput.value + " EUR";
-          //console.log(quantityInput.value);
+                    // affichage des éléments (ordre décroissant du plus précis au plus global)
+                    divTitlePrice.appendChild(title);
+                    divTitlePrice.appendChild(price);
+                    divContent.appendChild(divTitlePrice);
 
-          let divColor = document.createElement("div");
-          divColor.innerHTML = `<p>Couleur : ${product[2]}<p>`;
+                    divQuantity.appendChild(quantityTitle);
+                    divQuantity.appendChild(quantityInput);
+                    divSettings.appendChild(divColor);
+                    divSettings.appendChild(divQuantity);
+                    divDelete.appendChild(deleteItem);
+                    divSettings.appendChild(divDelete);
+                    divContent.appendChild(divSettings);
 
-          let divDelete = document.createElement("div");
-          divDelete.className = "cart__item__content__settings__delete";
-          let deleteItem = document.createElement("p");
-          deleteItem.className = "deleteItem";
-          deleteItem.innerText = "Supprimer";
+                    article.appendChild(divImage);
+                    article.appendChild(divContent);
+                    cartSection.appendChild(article);
 
-          // affichage des éléments (ordre décroissant du plus précis au plus global)
-          divTitlePrice.appendChild(title);
-          divTitlePrice.appendChild(price);
-          divContent.appendChild(divTitlePrice);
-
-          divQuantity.appendChild(quantityTitle);
-          divQuantity.appendChild(quantityInput);
-          divSettings.appendChild(divColor);
-          divSettings.appendChild(divQuantity);
-          divDelete.appendChild(deleteItem);
-          divSettings.appendChild(divDelete);
-          divContent.appendChild(divSettings);
-
-          article.appendChild(divImage);
-          article.appendChild(divContent);
-          cartSection.appendChild(article);
-
-          // Modification du prix du produit de produit
-          quantityInput.addEventListener("change", (event) => {
-            price.innerHTML = productPrice * event.target.value + " EUR";
-          });
-        })
-
-        .catch(function (error) {
-          console.log(
-            "Il y a eu un problème avec l'opération fetch: " + error.message
-          );
-        });
-    }
-    deleteProduct();
-    changePdtQty();
-    totalPce();
-  }
+                      // Modification du prix du produit de produit
+                    quantityInput.addEventListener("change", (event) => {
+                    price.innerHTML = productPrice * event.target.value + " EUR";
+                    });
+                    
+                })
+                .catch(function (error) {
+                    console.log('Il y a eu un problème avec l\'opération fetch: ' + error.message);
+                });
+        }
+        deleteProduct();
+        changePdtQty();
+        totalPce();
+    };
 }
 displayItem();
 
-/* Modifier la quantité de l'article
+/* Modifier la quantité de l'article 
  * = 1 récup les input itemQuantity des articles et leur id dans le panier / 2 récup qté dans l'input itemQuantity
  * si itemQuantity change (addEventlistener) / alors set nouvelle quantité de itemQuantity ds DOM et dans cart
  */
-function changePdtQty() {
-  let itemQuantity = document.querySelectorAll(".itemQuantity");
-  for (let k = 0; k < itemQuantity.length; k++) {
-    itemQuantity[k].addEventListener("change", () => {
-      let newQty = itemQuantity[k].value;
-      if (newQty >= 1 && newQty <= 100) {
-        cartProducts[k][1] = itemQuantity[k].value;
-        localStorage.setItem("cart", JSON.stringify(cartProducts));
-        // recalcul qté et prix totaux
-        totalPce();
-      } else {
-        alert("Veuillez saisir une valeur entre 1 et 100 s'il vous plait.");
-        itemQuantity[k].value = product[k][1];
-      }
-    });
-  }
+function changePdtQty() { 
+    // sélection des inputs
+    let itemQuantity = document.querySelectorAll('.itemQuantity');
+    for (let k = 0; k < itemQuantity.length; k++) {
+        // console.log(itemQuantity[k].value);
+        itemQuantity[k].addEventListener('change', () => { //callback        
+            let newQty = itemQuantity[k].value;
+            if (newQty >= 1 && newQty <= 100){
+                cart[k].quantity = itemQuantity[k].value;
+                localStorage.setItem('cart', JSON.stringify(cart));
+                // recalcul qté et prix totaux
+                totalPce();
+            } else {
+                alert('Veuillez saisir une valeur entre 1 et 100 s\'il vous plait.') 
+                itemQuantity[k].value = cart[k].quantity;               
+            }
+        })
+    }
 }
 
-function totalPce() {
-  let totalPce = parseInt(0);
-  let totalQty = Number(0);
-
-  let elements = document.querySelectorAll(".cart__item");
-  elements.forEach((element) => {
-    let dataAttribute = element.getAttribute("data-id");
-    let productQty = element.querySelector(".itemQuantity").value;
-    //total de produit dans le panier :
-    totalQty += Number(productQty);
-    document.querySelector("#totalQuantity").innerText = totalQty;
-    // prix total du panier
-    fetch("http://localhost:3000/api/products/" + dataAttribute)
-      .then(function (res) {
-        if (res.ok) {
-          return res.json();
-        }
-      })
-      .then(function (value) {
-        let productPrice = Number(value.price);
-        // console.log("qté du produit " + productQty + " prix produit " + productPrice)
-        // calcul total
-        totalPce += productQty * productPrice;
-        // affichage prix total dans le panier
-        document.querySelector("#totalPrice").innerText = totalPce;
-      })
-      .catch(function (error) {
-        console.log(
-          "Il y a eu un problème avec l'opération fetch pour le calcul total : " +
-            error.message
-        );
-      });
-  });
-}
-/* Supprimer l'article :*/
-
+/* Supprimer l'article : 
+ * = 1 récup articles et leur id dans le cart 
+ * si deleteItem click (addeventlistener) / alors set suppr product ds DOM et dans cart
+ */
 function deleteProduct() {
-  let deleteItem = document.querySelectorAll(".deleteItem");
-  for (let j = 0; j < deleteItem.length; j++) {
-    deleteItem[j].addEventListener("click", (event) => {
-      event.preventDefault();
-      let itemToDelete = cartProducts.indexOf(cartProducts[j]);
-      console.log(
-        "index du produit à suppr : " +
-          itemToDelete +
-          " couleur : " +
-          cartProducts[j][3]
-      );
-      cartProducts.splice(itemToDelete, 1);
-      // renvoyer ce nouveau panier dans le localStorage
-      localStorage.setItem("cart", JSON.stringify(cartProducts));
+    let deleteItem = document.querySelectorAll('.deleteItem');
+    for (let j = 0; j < deleteItem.length; j++) {
+        deleteItem[j].addEventListener('click', (event) => { //callback
+            event.preventDefault();
+            let itemToDelete = cart.indexOf(cart[j]);
+            console.log("index du produit à suppr : " + itemToDelete + " couleur : " + cart[j].color)
+            cart.splice(itemToDelete, 1);
+            // renvoyer ce nouveau panier dans le localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
+            // recharger la page pour suppr affichage du produit dans le panier
+            location.reload();
+        })
+        //recalculer le prix total sans cet article
+        totalPce();
+    }
+}
 
-      // recharger la page pour suppr affichage du produit dans le panier
-      location.reload();
+/* fonction pour calculer le montant et la qté total du panier 
+ * 1 = calculer le prix d'un article * sa quantité
+ * 1bis = calculer le nombre d'article total dans le panier
+ * 2 = additionner les totaux de chaque ligne dans le prix total
+ */
+function totalPce() {
+    let totalPce = parseInt(0);
+    let totalQty = Number(0);
+    // console.log('test')
+
+    let elements = document.querySelectorAll('.cart__item');
+    elements.forEach(element => {
+        let dataAttribute = element.getAttribute('data-id');
+        let productQty = element.querySelector(".itemQuantity").value;
+        //total de produit dans le panier :
+        totalQty += Number(productQty);
+        document.querySelector('#totalQuantity').innerText = totalQty;
+        // prix total du panier
+        fetch("http://localhost:3000/api/products/" + dataAttribute)
+            .then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                }
+            })
+            .then(function (value) {
+                let productPrice = Number(value.price);
+                // calcul total
+                totalPce += (productQty * productPrice);
+                // affichage prix total dans le panier
+                document.querySelector('#totalPrice').innerText = totalPce;
+            })
+            .catch(function (error) {
+                console.log('Il y a eu un problème avec l\'opération fetch pour le calcul total : ' + error.message);
+            });
     });
-    //recalculer le prix total sans cet article
-    totalPce();
-  }
 }
-//console.log(cartProducts);
 
-//-------------------Formulaire regExp------------------------
-// on selection le formulaire dans le HTML
-let form = document.querySelector(".cart__order__form");
+/******************************* vérifier les infos dans le formulaire de commande + requet post api */
+//récupération des données du formulaire 
+let form = document.querySelector('.cart__order__form');
+let firstName = document.querySelector('#firstName');
+let lastName = document.querySelector('#lastName');
+let address = document.querySelector('#address');
+let city = document.querySelector('#city');
+let email = document.querySelector('#email');
 
-//-------- Validation Prenom------------------
-form.firstName.addEventListener("change", function () {
-  validfirstName(this);
-});
-const validfirstName = function (inputfirstName) {
-  //regExp = lettre minuscule et majuscule de a à z, entre 3 et 20 caractères
-  let firstNameRegExp = new RegExp("^[A-Za-zéèàôö ,']{3,20}$", "g");
-  let errorMsg = document.querySelector("#firstNameErrorMsg");
-
-  // Si les conditions sont remplie, renvoyer "true"
-  if (firstNameRegExp.test(inputfirstName.value)) {
-    errorMsg.innerHTML = "";
-    return true;
-  }
-  //Sinon affichage du message d'erreur
-  else {
-    errorMsg.innerHTML = "Prénom non valide";
-  }
+// fonction pour vérifier les données du formulaire
+// prénom 
+const firstNameCheck = () => {
+    let firstNameErrorMsg = document.querySelector('#firstNameErrorMsg');
+    if (!/^[A-Za-zÀ-ÿ\-' ]+$/gi.test(firstName.value) || firstName.value == "") {
+        firstNameErrorMsg.textContent = "Renseignez votre prénom en lettres pour valider votre commande."
+        return false;
+    } else {
+        firstNameErrorMsg.textContent = ""
+        return true;
+    }
 };
-
-//-------- Validation Nom------------------
-form.lastName.addEventListener("change", function () {
-  validlastName(this);
-});
-const validlastName = function (inputlastName) {
-  let lastNameRegExp = new RegExp("^[A-Za-zéàèôö,']{3,20}$", "g");
-  let errorMsg = document.querySelector("#lastNameErrorMsg");
-
-  if (lastNameRegExp.test(inputlastName.value)) {
-    errorMsg.innerHTML = "";
-    return true;
-  } else {
-    errorMsg.innerHTML = "Nom non valide";
-  }
+// nom
+const lastNameCheck = () => {
+    let lastNameErrorMsg = document.querySelector('#lastNameErrorMsg');
+    if (!/^[A-Za-zÀ-ÿ\-' ]+$/gi.test(lastName.value) || lastName.value == "") {
+        lastNameErrorMsg.textContent = "Renseignez votre nom en lettres pour valider votre commande."
+        console.log("le nom : " + lastName.value + " ne correspond pas au modèle");
+        return false;
+    } else {
+        lastNameErrorMsg.textContent = ""
+        return true;
+    }
 };
-
-//-------- Validation Adresse------------------
-form.address.addEventListener("change", function () {
-  validAddress(this);
-});
-const validAddress = function (inputAddress) {
-  let addressRegExp = new RegExp("[A-Za-z0-9'.-s,]", "g");
-  let errorMsg = document.querySelector("#addressErrorMsg");
-
-  if (addressRegExp.test(inputAddress.value)) {
-    errorMsg.innerHTML = "";
-    return true;
-  } else {
-    errorMsg.innerHTML = "Address non valide";
-  }
+// adresse
+const addressCheck = () => {
+    let addressErrorMsg = document.querySelector('#addressErrorMsg');
+    if (!/^([A-Za-zÀ-ÿ]|[0-9]{1,4})([A-Za-zÀ-ÿ\-' ]+$)/gi.test(address.value) || address.value == "") {
+        addressErrorMsg.textContent = "Renseignez votre addresse pour valider votre commande. Ex : 25 rue du confort"
+        console.log("l\'adresse ne correspond pas au modèle");
+        return false;
+    } else {
+        addressErrorMsg.textContent = "";
+        return true;
+    }
 };
-
-//-------- Validation Ville------------------
-form.city.addEventListener("change", function () {
-  validCity(this);
-});
-const validCity = function (inputCity) {
-  let cityRegExp = new RegExp("^[A-Za-z ,.'-]{3,20}$", "g");
-  let errorMsg = document.querySelector("#cityErrorMsg");
-
-  if (cityRegExp.test(inputCity.value)) {
-    errorMsg.innerHTML = "";
-    return true;
-  } else {
-    errorMsg.innerHTML = "Ville non valide";
-  }
+// ville
+const cityCheck = () => {
+    let cityErrorMsg = document.querySelector('#cityErrorMsg');
+    if (!/^[A-Za-zÀ-ÿ\-' ]+$/gi.test(city.value) || city.value == "") { // ou cp + ville : /^[0-9]{5} [A-Za-zÀ-ÿ\-' ]+$/gi
+        cityErrorMsg.textContent = "Renseignez votre ville en toutes lettres pour valider votre commande."
+        console.log("le nom de la ville ne correspond pas au modèle");
+        return false;
+    } else {
+        cityErrorMsg.textContent = "";
+        return true;
+    }
 };
+// email
+const emailCheck = () => {
+    let emailErrorMsg = document.querySelector('#emailErrorMsg');
+    if (!/([a-z\.\-]{1,})@([a-z\-\.]{2,})\.([a-z]{2,4})/gi.test(email.value) || email.value == "") {
+        emailErrorMsg.textContent = "Renseignez votre email sous le format \"xxxxx@xxxx.xxx\" pour valider votre commande."
+        console.log("l\'adresse email ne correspond pas au regex");
+        return false;
+    } else {
+        emailErrorMsg.textContent = "";
+        return true;
+    }
+}
 
-//-------- Validation e-mail------------------
-form.email.addEventListener("change", function () {
-  validEmail(this);
-});
-const validEmail = function (inputEmail) {
-  //creation de la regExp pour la validation de l'email
-  let emailRegExp = new RegExp(
-    "^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$",
-    "g"
-  );
-  let errorMsg = document.querySelector("#emailErrorMsg");
-
-  if (emailRegExp.test(inputEmail.value)) {
-    errorMsg.innerHTML = "";
-    return true;
-  } else {
-    errorMsg.innerHTML = "Email non valide";
-  }
-};
-
-//---------------------Soumission du formulaire---------------------
-form.addEventListener("submit", function (e) {
-  e.preventDefault();
-  // si tout les éléments sont true, le bouton commande renvoit vers la page confirmation
-  if (
-    validfirstName(form.firstName) &&
-    validlastName(form.lastName) &&
-    validAddress(form.address) &&
-    validCity(form.city) &&
-    validEmail(form.email)
-  ) {
-    recupInfoForm(this);
-  }
-});
-
-function recupInfoForm(form) {
-  //Stockage des informations du formulaire
-  let productsId = []
-  cartProducts.forEach(product => {
-    productsId.push(product[0]);
-  });
-  const body = {
-    contact: {
-      firstName: form.firstName.value,
-      lastName: form.lastName.value,
-      address: form.address.value,
-      city: form.city.value,
-      email: form.email.value,
-    },
-    //Stockage des produits du panier
-    products: productsId,
-  };
-  console.log(body);
-  
-
-  //Récuperer l'orderID dans le back-end
-  fetch("http://localhost:3000/api/products/order", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-    
-  }).then( res => res.json() )
-  .then(js => {
-      location.href =  `./confirmation.html?orderid=${js['orderId']}`
+// event listerner : au click si vérifs ok alors envoyer contact + products à api (post)
+let orderBtn = document.querySelector('#order');
+console.log(orderBtn);
+orderBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    let contact = {};
+    let products = [];
+    //collecter les id des produits du panier
+    cart.forEach(element => {
+        products.push(element.ref);
     })
-}
+    // vérification des inputs du formulaire
+    if (!firstNameCheck() || 
+        !lastNameCheck() || 
+        !addressCheck() || 
+        !cityCheck() || 
+        !emailCheck()) {
+        e.preventDefault();
+    } else {
+        // récup valeurs pour objet contact 
+        contact = {
+            'firstName': firstName.value,
+            'lastName': lastName.value,
+            'address': address.value,
+            'city': city.value,
+            'email': email.value,
+        }
+        // déclaration d'une variable contenant les infos de la commande
+        let order = {
+            contact,
+            products
+        }
+
+        //requete post api
+        fetch("http://localhost:3000/api/products/order", {
+                "method": "post",
+                "headers": {
+                    "Content-Type": "application/json"
+                },
+                "body": JSON.stringify(order)
+            })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+            })
+            .then(function (value) {
+                let orderLink = document.createElement('a');
+                orderLink.href = "confirmation.html?id=" + value.orderId;
+                console.log(orderLink);
+                //redirection vers page confirmation + orderId
+                window.location.href = orderLink
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    }
+}); // fin eventListener

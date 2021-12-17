@@ -15,7 +15,7 @@ fetch("http://localhost:3000/api/products/" + idKanap)
   })
   .then(function (value) {
     //modif titre page web avec nom produit
-    document.querySelector("title").innerHTML = value.name;
+    document.querySelector("title").innerText = value.name;
 
     // recup div image dans laquelle la balise image doit apparaître
     let divImage = document.querySelector(".item__img");
@@ -27,8 +27,8 @@ fetch("http://localhost:3000/api/products/" + idKanap)
 
     // modif titre, prix et description
     document.querySelector("#title").innerText = value.name;
-    document.querySelector("#price").innerHTML = value.price;
-    document.querySelector("#description").innerHTML = value.description;
+    document.querySelector("#price").innerText = value.price;
+    document.querySelector("#description").innerText = value.description;
 
     //implémentation du choix des couleurs dispo pour le produit
     let colors = document.querySelector("#colors");
@@ -111,7 +111,7 @@ addToCartBtn.onclick = () => {
       }
       // remplace le panier par le nouveau panier avec produits ajoutés et/ou incrémentés
       localStorage.setItem("cart", JSON.stringify(newCart));
-      console.log(newCart);
+      
     }
   }
 

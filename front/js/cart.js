@@ -211,9 +211,9 @@ let email = document.querySelector("#email");
 // prénom
 const firstNameCheck = () => {
   let firstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
-  if (!/^[A-Za-zÀ-ÿ\-' ]+$/gi.test(firstName.value) || firstName.value == "") {
+  if (!/^[A-Za-zÀ-ÿ\-']+$/gi.test(firstName.value) || firstName.value == "") {
     firstNameErrorMsg.textContent =
-      "Renseignez votre prénom en lettres pour valider votre commande.";
+      "Renseignez votre prénom en lettres sans espace (un tiret pour separer) pour valider votre commande.";
     return false;
   } else {
     firstNameErrorMsg.textContent = "";
@@ -223,9 +223,9 @@ const firstNameCheck = () => {
 // fonction pour vérifier les données du formulaire du nom
 const lastNameCheck = () => {
   let lastNameErrorMsg = document.querySelector("#lastNameErrorMsg");
-  if (!/^[A-Za-zÀ-ÿ\-' ]+$/gi.test(lastName.value) || lastName.value == "") {
+  if (!/^[A-Za-zÀ-ÿ\-']+$/gi.test(lastName.value) || lastName.value == "") {
     lastNameErrorMsg.textContent =
-      "Renseignez votre nom en lettres pour valider votre commande.";
+      "Renseignez votre nom en lettres sans espace (un tiret pour separer) pour valider votre commande.";
     return false;
   } else {
     lastNameErrorMsg.textContent = "";

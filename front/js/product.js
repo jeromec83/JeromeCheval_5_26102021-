@@ -1,6 +1,6 @@
 // PAGE PRODUIT
 
-// recup url de la page produit
+// recup url de la page precedente
 const params = window.location.href;
 const kanapUrl = new URL(params);
 // recup _id produit dans l'url

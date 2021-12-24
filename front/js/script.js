@@ -15,18 +15,18 @@ function displayProducts() {
     .then((products) => {
       products.forEach((product) => {
         /*recuperation balise a.href*/
-        var a = document.createElement("a");
+        const a = document.createElement("a");
         a.href = `./product.html?id=${product._id}`;
-        var article = document.createElement("article");
+        const article = document.createElement("article");
         /*recuperation image+alt*/
-        var img = document.createElement("img");
+        const img = document.createElement("img");
         img.src = `${product.imageUrl}`;
         img.alt = `${product.altTxt}`;
         /*recuperation titre produite*/
-        var nameh3 = document.createElement("h3");
+        const nameh3 = document.createElement("h3");
         nameh3.textContent = product.name;
         /*recuperation description produit*/
-        var description = document.createElement("p");
+        const description = document.createElement("p");
         description.textContent = product.description;
         /*affichage des infos recuperées*/
         article.appendChild(img);

@@ -1,3 +1,4 @@
+//Appel de l'API
 function getProducts() {
   return new Promise((resolve, reject) => {
     fetch(`http://localhost:3000/api/products`)
@@ -6,7 +7,8 @@ function getProducts() {
       .catch((error) => reject(error));
   });
 }
-
+//Recupération des données de l'API
+//Insertion au DOM
 function displayProducts() {
   document.querySelector(".items");
   getProducts()
@@ -42,5 +44,4 @@ function displayProducts() {
       document.querySelector(".items").style.textAlign = "center";
     });
 }
-
 displayProducts();
